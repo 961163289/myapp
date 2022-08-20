@@ -1,10 +1,11 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from 'umi';
+// import { request } from 'umi';
+import request from '@/plugins/globalRequest';
 
 /** 获取当前的用户 GET /api/user/current */
 export async function currentUser(options?: { [key: string]: any }) {
-  return request<API.CurrentUser>('/api/user/current', {
+  return request<API.BaseResponse<API.CurrentUser>>('/api/user/current', {
     method: 'GET',
     ...(options || {}),
   });
@@ -12,7 +13,7 @@ export async function currentUser(options?: { [key: string]: any }) {
 
 /** 退出登录接口 POST /api/user/logout */
 export async function outLogin(options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/api/user/logout', {
+  return request<API.BaseResponse<number>>('/api/user/logout', {
     method: 'POST',
     ...(options || {}),
   });
@@ -20,7 +21,7 @@ export async function outLogin(options?: { [key: string]: any }) {
 
 /** 登录接口 POST /api/user/login */
 export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
-  return request<API.LoginResult>('/api/user/login', {
+  return request<API.BaseResponse<API.LoginResult>>('/api/user/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -33,7 +34,7 @@ export async function login(body: API.LoginParams, options?: { [key: string]: an
 /** 注册接口 POST /api/user/register */
 /** body: API.RegisterParams  给函数接收的对象 body 加一个类型约束 */
 export async function register(body: API.RegisterParams, options?: { [key: string]: any }) {
-  return request<API.RegisterResult>('/api/user/register', {
+  return request<API.BaseResponse<API.RegisterResult>>('/api/user/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -45,7 +46,7 @@ export async function register(body: API.RegisterParams, options?: { [key: strin
 
 /** 搜索用户 GET /api/user/search */
 export async function searchUsers(options?: { [key: string]: any }) {
-  return request<API.CurrentUser[]>('/api/user/search', {
+  return request<API.BaseResponse<API.CurrentUser[]>>('/api/user/search', {
     method: 'GET',
     ...(options || {}),
   });
@@ -53,7 +54,7 @@ export async function searchUsers(options?: { [key: string]: any }) {
 
 /** 此处后端没有提供注释 GET /api/notices */
 export async function getNotices(options?: { [key: string]: any }) {
-  return request<API.NoticeIconList>('/api/notices', {
+  return request<API.BaseResponse<API.NoticeIconList>>('/api/notices', {
     method: 'GET',
     ...(options || {}),
   });
