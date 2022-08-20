@@ -1,16 +1,20 @@
 import Footer from '@/components/Footer';
 import RightContent from '@/components/RightContent';
-import { BookOutlined, LinkOutlined } from '@ant-design/icons';
-import type { Settings as LayoutSettings } from '@ant-design/pro-components';
-import { PageLoading, SettingDrawer } from '@ant-design/pro-components';
-import type { RunTimeLayoutConfig } from 'umi';
-import { history, Link } from 'umi';
+import {BookOutlined, LinkOutlined} from '@ant-design/icons';
+import type {Settings as LayoutSettings} from '@ant-design/pro-components';
+import {PageLoading, SettingDrawer} from '@ant-design/pro-components';
+import type {RunTimeLayoutConfig} from 'umi';
+import {history, Link} from 'umi';
 import defaultSettings from '../config/defaultSettings';
-import { currentUser as queryCurrentUser } from './services/ant-design-pro/api';
+import {currentUser as queryCurrentUser} from './services/ant-design-pro/api';
 import {RequestConfig} from "@@/plugin-request/request";
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
+/**
+ * 无需用户登录态的页面
+ */
+const NO_NEED_LOGIN_WHITE_LIST = ['/user/register', loginPath];
 
 /** 获取用户信息比较慢的时候会展示一个 loading */
 export const initialStateConfig = {
@@ -19,7 +23,7 @@ export const initialStateConfig = {
 
 /** 定义请求的前缀 */
 export const request: RequestConfig = {
-  timeout: 100000,
+  timeout: 1000,
 }
 
 /**
@@ -31,26 +35,28 @@ export async function getInitialState(): Promise<{
   loading?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
+  // 封装了一个获取用户信息的方法
   const fetchUserInfo = async () => {
     try {
-      const msg = await queryCurrentUser();
-      return msg.data;
+      return await queryCurrentUser();
     } catch (error) {
       history.push(loginPath);
     }
     return undefined;
   };
-  // 如果不是登录页面，执行
-  if (history.location.pathname !== loginPath) {
-    const currentUser = await fetchUserInfo();
+  // 如果是无需登录的页面，不执行
+  if (NO_NEED_LOGIN_WHITE_LIST.includes(history.location.pathname)) {
     return {
+      // @ts-ignore
       fetchUserInfo,
-      currentUser,
       settings: defaultSettings,
     };
   }
+  const currentUser = await fetchUserInfo();
   return {
+    // @ts-ignore
     fetchUserInfo,
+    currentUser,
     settings: defaultSettings,
   };
 }
@@ -61,13 +67,17 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     rightContentRender: () => <RightContent />,
     disableContentMargin: false,
     waterMarkProps: {
-      content: initialState?.currentUser?.name,
+      //如果用户登录后,可以在这个前端布局中打上一个水印
+      content: initialState?.currentUser?.username,
     },
     footerRender: () => <Footer />,
     onPageChange: () => {
       const { location } = history;
+      if (NO_NEED_LOGIN_WHITE_LIST.includes(location.pathname)){
+        return;
+      }
       // 如果没有登录，重定向到 login
-      if (!initialState?.currentUser && location.pathname !== loginPath) {
+      if (!initialState?.currentUser) {
         history.push(loginPath);
       }
     },
